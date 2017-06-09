@@ -1,0 +1,215 @@
+﻿#page_nav {
+    overflow:hidden;
+}
+
+/* ########## Top Admin Buttons ######## */
+/* ##################################### */
+
+.adminButtons {
+    display: inline-block;
+    float:right;
+    text-decoration: none;
+    margin:1px 3px 1px 3px;
+    height: 16px;
+    line-height: 15px;
+    font-family: Calibri;
+    font-size:14px;
+    border: 1px solid #616161;
+    padding: 0 3px 0 3px;
+    color: #d3d3cd;
+    font-weight:300;
+    background-color: #484545;
+    cursor:pointer;
+}
+
+.adminButtons:hover {
+    color: #e8e6de;
+    background-color: #777770;
+}
+#logIn_button {
+}
+
+#logOut_button {
+    display:none;
+}
+
+#showAdminPanel_button {
+    display:none;
+}
+
+/* ########## Admin Panel ######## */
+/* ############################### */
+
+div#admin_panel {
+    display:none;
+    background-color:#c7c0b4;
+    height:100%;
+    padding-top:5px;
+    overflow:no-content;
+}
+
+div#admin_panel h3 {
+    margin:0px 10px 10px 15px;
+    font-family:'Segoe UI';
+    color:#fffffc;
+    text-shadow: 1px 1px 3px black;    
+}
+
+div#admin_panel table {
+    margin-left:10px;
+    box-shadow: 0px 1px 2px #888888;
+}
+
+div#admin_panel table th {
+    font-family:'Segoe UI';
+    font-weight:600;
+    font-size:15px;
+    padding: 0 10px 0 10px;
+    background-color:#f2f2ef;
+}
+
+div#admin_panel table, tr {
+    border: 1px solid #7c7c79;
+    border-collapse:collapse;
+}
+
+div#admin_panel tr:nth-child(even) {background: #f4f4f2}
+div#admin_panel tr:nth-child(odd) {background: #e8e6e3}
+
+.admin_panel_up_arrow {       
+    display:block;
+    height:15px;
+    margin-left:calc(50% - 15px);
+    float:left;
+    line-height:20px;
+}
+
+.admin_panel_down_arrow {        
+    display:block;
+    height:15px;
+    line-height:20px;
+    margin-right:calc(50% - 15px);
+    float:right;
+    transform: rotate(180deg);
+}
+
+
+div#admin_panel table td {
+    text-align:center;
+}
+
+.accountID_input {
+    width:220px;
+}
+
+.postsPerView_input {
+    width:40px;
+}
+
+.postsPerFeed_input {
+    width:40px;
+}
+
+.displayOrder_input {
+    text-align:center;
+    width:20px;
+}
+
+#admin_render_save_buttons_wrapper {
+    margin: 10px 0 5px 15px;
+}
+
+/* ########## Login Window ######## */
+/* ################################ */
+
+div#login_window {
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: calc(50% - 175px);
+    width: 350px;
+    height: auto;
+    background-color: #F7F7F7;
+    border: 1px solid #B5B5B5;
+    font-family: 'Segoe UI';
+    font-size: 13px;
+    z-index:999;
+}
+
+div#login_window_top {
+    height: 20px;
+    line-height: 20px;
+    border-bottom: 1px solid #B5B5B5;
+    padding: 5px;
+}
+
+div#login_window_top_close_btn {
+    display: block;
+    height: 20px;
+    float: right;
+    color: #777777;
+    font-weight: bold;
+    font-size: 15px;
+    margin: auto;
+    padding-left: 6px;
+    padding-right: 7px;
+    border: 1px solid #F7F7F7;
+    cursor:pointer;
+}
+
+div#login_window table {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width:100%;
+}
+
+#login_userName_label {
+    margin-left: 20px;
+}
+
+#login_password_label {
+    margin-left: 20px;
+}
+
+div#login_window_bottom {
+    height: 35px;
+    line-height: 30px;
+    border-top: 1px solid #B5B5B5;
+    padding: 5px;
+}
+
+div#login_window_bottom_buttons {
+    float: right;
+}
+
+#login_window_ok_btn {
+    border: none;
+    display: block;
+    position: relative;
+    height: 30px;
+    width: 40px;
+    line-height: 30px;
+    margin-top: 3px;
+    margin-right: 1px;
+    padding: 0 3px 0 3px;
+    background-color: #527FB5;
+    border: 1px solid #F7F7F7;
+    font-size: 15px;
+    color: white;
+    float: left;
+}
+
+#login_window_cancel_btn {
+    border: none;
+    display: block;
+    position: relative;
+    height: 30px;
+    line-height: 30px;
+    margin-top: 3px;
+    margin-right: 3px;
+    padding: 0 6px 0 5px;
+    background-color: #D7D7D7;
+    border: 1px solid #F7F7F7;
+    font-size: 15px;
+    color: black;
+}

@@ -1,0 +1,90 @@
+﻿body{
+	margin:0;
+	padding:0;
+    border:0;
+	width:100%;
+	overflow:auto;
+    overflow-x:hidden;
+    background-color:#e8e6de;
+}
+
+a, a:active, a:visited {
+    color:#e8e6de;
+    text-decoration:none;
+}
+
+
+/* ###### NAV ###### */
+/* ################# */
+
+#nav_wrapper {
+    position:fixed;
+    top:0;
+    left:0;
+    height:80px;
+    width:100%;
+    z-index:999;
+}
+
+#master_nav {
+    display:block;
+	height:20px;
+	width:100%;
+	/* 
+        background-color:#5791C4;
+    */
+	background-color:#30302e;    
+}
+
+#page_nav {
+	height:400px;
+	width:100%;    
+	/* 
+        background-color:#f2f2ef;
+    */
+	background-color:rgba(0,0,0,0.1);    
+    box-shadow: 0px 1px 2px #888888;
+}
+
+#page_nav_overlay {
+    position:absolute;
+    z-index:-1;
+    background-image:url(../rg1608wide.jpg);
+    background-position:0% 20%;
+    height:400px;
+    width:100%;
+}
+
+#page_nav_logo {
+    position:absolute;
+    z-index:1;
+    height:200px;
+}
+
+/* ###### BODY ###### */
+/* ################## */
+
+#body_container {
+    position:relative;
+    display:block;
+    margin:420px 0 0 0;
+    padding:0;
+    width:100%;
+    min-height:calc(100vh - 240px);
+    overflow:hidden;
+    /* background-color:green; */
+}
+
+/* ###### FOOTER ###### */
+/* #################### */
+
+#footer {
+    position:relative;
+    height:20px;
+    width:100%;
+	/* 
+        background-color:yellow;
+    */
+    color:#e8e6de;
+	background-color:#30302e;      
+}

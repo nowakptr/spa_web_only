@@ -1,0 +1,87 @@
+﻿#feed_container {
+    height: auto;
+    width:80%;
+    overflow: auto;
+    max-width:1200px;
+    margin:auto;
+    /*
+        background-color:darksalmon;
+    */
+    background-color:rgba(0,0,0,0.05);    
+    border-radius: 2px;
+}
+
+#youtube_main_feed {
+    min-height:450px;
+    width:calc(25% - 19px);
+    margin:0 0px 0 15px;
+    /*
+        background-color:palevioletred;
+    */
+    float:left;
+}
+
+#youtube_vgm_feed {
+    min-height:450px;
+    width:calc(25% - 19px);
+    margin:0 0px 0 15px;
+    /*
+        background-color:aquamarine;
+    */
+    float:left;
+}
+
+#facebook_feed {
+    min-height:450px;
+    width:calc(25% - 18px);
+    margin:0 0px 0 15px;
+    /*
+        background-color:blueviolet;
+    */
+    float:left;
+}
+
+#instagram_feed {
+    min-height: 450px;
+    width: calc(25% - 19px);
+    margin: 0 0px 0 15px;
+    /*
+        background-color:burlywood;
+    */
+    float: left;
+}
+
+/* ############################ */
+
+div.feed_header {
+    height:25px;
+    margin:5px 0 5px 0;
+    line-height:25px;
+}
+
+img.feed_header_logo {
+    height:25px;
+    vertical-align:middle;
+    margin:0px 0 0 3px;
+}
+
+span.feed_header_title {
+    font-family:Calibri;
+    font-size:15px;
+    font-weight:bold;
+    margin:0px 0 0 5px;
+}
+
+/* ############################ */
+
+.yt_video_container {
+    margin: 0 0 10px 0;
+    background-color:rgba(0,0,0,0.05);    
+    border-bottom-left-radius: 2px;
+}
+
+.yt_description {
+    padding:3px 5px 3px 5px;
+    font-family:Calibri;
+    font-size:10pt;
+}

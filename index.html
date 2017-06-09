@@ -1,0 +1,509 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>nowakptr | SPA Feed</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="AUTHOR" content="Piotr Nowak" />
+    <meta name="description" content="placeholder" />
+    <link rel="stylesheet" type="text/css" href="./Content/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="./Content/css/nav.css" />
+    <link rel="stylesheet" type="text/css" href="./Content/css/admin.css" />
+    <link rel="stylesheet" type="text/css" href="./Content/css/feed_page.css" />
+    <script src="./Scripts/angularJS/angular.min.js"></script>
+    <script src="./Scripts/jQuery/jquery-1.12.4.min.js"></script>
+    <script src="./Scripts/jQuery/jquery-ui.min.js"></script>
+    <script src="./Scripts/NavigationResizing.js"></script>
+    <script src="./Scripts/AdminPanel.js"></script>
+    <script src="./Scripts/FeedSettings.js"></script>
+    <script>
+        var minFeedID = 1;
+        var maxFeedID = 5; // raising this number above 5 would require: another feedSection, a new row in tbl_feedDisplaySettings in db
+
+        var app = angular.module('SocialFeedApp', []).controller('SocialFeedCtrl', BindFeedDataToCtrl);
+
+        var allFeedsData = {}
+
+        function GetFeed(feedID, url)
+        {
+            allFeedsData['feedData' + feedID] = null;
+            //console.log(allFeedsPosts['feedPosts' + feedID]);
+
+            $.ajax({ // ajax call to get JSON response from my Web API
+                cache: false,
+                type: "GET",
+                url: url,
+                data: {
+                },
+                success: function (data) { // if API response goes OK
+                    //console.log(data);
+                    //console.log(data.feedPosts);
+                    var postCount = data.feedPosts.length;
+                    //console.log(postCount);
+                    if (postCount < allFeedsSettings['postsPerFeed' + feedID]) { allFeedsSettings['postsPerFeed' + feedID] = postCount; } // if API returned less posts than requested, make the postsPerFeed number smaller (for proper scrolling)
+
+                    // make the slideshow length (width!) appropriate to number of posts displayed and number of posts per view -> 15 posts in slideshow, 3 posts per view means 500% width (because 5 "views" are required)
+                    var width = 100;
+                    if (allFeedsSettings['postsPerFeed' + feedID] % allFeedsSettings['postsPerView' + feedID] != 0) { width = (Math.floor(allFeedsSettings['postsPerFeed' + feedID] / allFeedsSettings['postsPerView' + feedID]) + 2) * 100 }
+                    else { width = ((allFeedsSettings['postsPerFeed' + feedID] / allFeedsSettings['postsPerView' + feedID]) + 1) * 100 }
+                    $("#feed_slideshow_" + feedID).width(width + "%");
+                    
+                    $.each(data.feedPosts, function (index, value) {
+                        if (data.feedPosts[index].dislikeCountDisabled) { data.feedPosts[index].dislikeCount = "N/A"; }
+                        if (data.feedPosts[index].viewCountDisabled) { data.feedPosts[index].viewCount = "N/A"; }
+                    });
+
+                    allFeedsData['feedData' + feedID] = data;
+                    //console.log(allFeedsPosts['feedPosts' + feedID]);
+                    ShowNewFeedData();
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    // Handle the error somehow
+                }
+            });
+        }
+
+        function ShowNewFeedData()
+        {
+            $('#feedDataReload_button').click();
+        }
+
+        function BindFeedDataToCtrl($scope)
+        {
+            $scope.firstFeedData = []
+            $scope.secondFeedData = []
+            $scope.thirdFeedData = []
+            $scope.fourthFeedData = []
+            $scope.fifthFeedData = []
+            
+            $scope.reload = function () {
+                if (allFeedsData['feedData1'] && allFeedsData['feedData1'].feedPosts.length > 0) {
+                    $scope.firstFeedData = allFeedsData['feedData1'];
+                    $('#feed_section_1').show();
+                }
+                else { $('#feed_section_1').hide(); }
+
+                if (allFeedsData['feedData2'] && allFeedsData['feedData2'].feedPosts.length > 0)
+                {
+                    $scope.secondFeedData = allFeedsData['feedData2'];
+                    $('#feed_section_2').show();
+                }
+                else { $('#feed_section_2').hide(); }
+
+                if (allFeedsData['feedData3'] && allFeedsData['feedData3'].feedPosts.length > 0) {
+                    $scope.thirdFeedData = allFeedsData['feedData3'];
+                    $('#feed_section_3').show();
+                }
+                else { $('#feed_section_3').hide(); }
+
+                if (allFeedsData['feedData4'] && allFeedsData['feedData4'].feedPosts.length > 0) {
+                    $scope.fourthFeedData = allFeedsData['feedData4'];
+                    $('#feed_section_4').show();
+                }
+                else { $('#feed_section_4').hide(); }
+
+                if (allFeedsData['feedData5'] && allFeedsData['feedData5'].feedPosts.length > 0) {
+                    $scope.fifthFeedData = allFeedsData['feedData5'];
+                    $('#feed_section_5').show();
+                }
+                else { $('#feed_section_5').hide(); }
+                //console.log($scope.firstFeedData);
+            }
+
+            $scope.reload();
+        }
+
+        function ReRenderFeeds()
+        {
+            UpdateAllFeedsSettingsFromTable();
+            GetAllFeeds();
+        }
+
+        function GetAllFeeds() {
+            GetFeed(1, "http://spa.nowakptr.com/api/" + allFeedsSettings['feedType1'] + "Feed?feedName=" + allFeedsSettings['feedName1'] + "&accountID=" + allFeedsSettings['accountID1'] + "&postsPerView=" + allFeedsSettings['postsPerView1'] + "&postsPerFeed=" + allFeedsSettings['postsPerFeed1']);
+            GetFeed(2, "http://spa.nowakptr.com/api/" + allFeedsSettings['feedType2'] + "Feed?feedName=" + allFeedsSettings['feedName2'] + "&accountID=" + allFeedsSettings['accountID2'] + "&postsPerView=" + allFeedsSettings['postsPerView2'] + "&postsPerFeed=" + allFeedsSettings['postsPerFeed2']);
+            GetFeed(3, "http://spa.nowakptr.com/api/" + allFeedsSettings['feedType3'] + "Feed?feedName=" + allFeedsSettings['feedName3'] + "&accountID=" + allFeedsSettings['accountID3'] + "&postsPerView=" + allFeedsSettings['postsPerView3'] + "&postsPerFeed=" + allFeedsSettings['postsPerFeed3']);
+            GetFeed(4, "http://spa.nowakptr.com/api/" + allFeedsSettings['feedType4'] + "Feed?feedName=" + allFeedsSettings['feedName4'] + "&accountID=" + allFeedsSettings['accountID4'] + "&postsPerView=" + allFeedsSettings['postsPerView4'] + "&postsPerFeed=" + allFeedsSettings['postsPerFeed4']);
+            GetFeed(5, "http://spa.nowakptr.com/api/" + allFeedsSettings['feedType5'] + "Feed?feedName=" + allFeedsSettings['feedName5'] + "&accountID=" + allFeedsSettings['accountID5'] + "&postsPerView=" + allFeedsSettings['postsPerView5'] + "&postsPerFeed=" + allFeedsSettings['postsPerFeed5']);
+        }
+
+        //////////////////////////////////////
+        //////////////////////////////////////
+
+        var rotationValues = {};
+
+        for (var i = 1; i <= maxFeedID; i++)
+        {
+            rotationValues[i] = 0; // by default every rotation position starts as 0
+        }
+
+        function RotateRight(feedID) {
+            var rotationVariable = rotationValues[feedID];           // save global variable as local (cut down on global var access)
+            var numberOfRotations = allFeedsSettings['postsPerFeed' + feedID] / allFeedsSettings['postsPerView' + feedID]; // how many times slideshow can be rotated before returning to starting point
+
+            // (1 - numberOfRotations) is basically -(numberOfRotations). Rotation var has to be decremented BEFORE rotating, so first click on arrow works correct
+            if (rotationVariable <= (1 - numberOfRotations)) { rotationVariable = 1 } // if current rotation is lower than -(numberOfRotations), reset to 1 (starting point)
+            rotationVariable--;                                                       // lower rotation number so slideshow rotates
+            document.getElementById('feed_slideshow_' + feedID).style.transform = 'translate(' + rotationVariable * 100 + 'vw)';  // rotate the slideshow by a full view width
+            rotationValues[feedID] = rotationVariable;                           // save back to global var
+        }
+
+        function RotateLeft(feedID) {
+            var rotationVariable = rotationValues[feedID];
+            var numberOfRotations = allFeedsSettings['postsPerFeed' + feedID] / allFeedsSettings['postsPerView' + feedID];
+
+            if (rotationVariable >= 0) { rotationVariable = Math.floor((0 - numberOfRotations)) } // all of slideshow is in negative width, so if in starting point,
+            rotationVariable++;                                                                   // load the mininum number (
+
+            document.getElementById('feed_slideshow_' + feedID).style.transform = 'translate(' + rotationVariable * 100 + 'vw)';
+            rotationValues[feedID] = rotationVariable;
+        }
+
+        function init() {
+            GetFeedSettings();
+            NavigationResizing();
+        }
+
+        $(document).ready(function () {
+            ControlAdminButtons();
+        });
+
+        window.onload = init();
+    </script>
+</head>
+
+<body>
+    <header id="nav_wrapper">
+        <nav id="master_nav">
+            <a id="logIn_button" class="adminButtons" onclick="ControlLoginPanel('show')">Log In</a> 
+            <a id="logOut_button" class="adminButtons" onclick="LogOut()">Log Out</a> 
+            <a id="showAdminPanel_button" class="adminButtons" onclick="ControlAdminPanel()">Toggle Admin Panel</a> 
+            <!--
+            <ul id="master_nav_list">
+                <li><a href="">nowakptr</a></li>
+                <li><a href="">nowakgtr</a></li>
+            </ul>
+             -->
+        </nav>
+
+        <nav id="page_nav">
+            <div id="admin_panel">
+                <h3>Admin panel</h3>
+                <div id="admin_settingsContainer">
+                    <table>
+                        <thead>
+                            <tr class="admin_table_headers">
+                                <th>Feed Type</th>
+                                <th>Feed Name</th>
+                                <th>Account ID</th>
+                                <th>Posts Per View</th>
+                                <th>Posts Per Feed</th>
+                                <th>Display Order</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="adminTableRow1" class="admin_table_row">
+                                <td>
+                                    <select id="feedType_input1">
+                                        <option value="YouTube">YouTube</option>
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Instagram">Instagram</option>
+                                    </select>
+                                </td>
+                                <td><input id="feedName_input1" type="text" /></td>
+                                <td><input id="accountID_input1" type="text" class="accountID_input" /></td>
+                                <td><input id="postsPerView_input1" type="number" class="postsPerView_input" /></td>
+                                <td><input id="postsPerFeed_input1" type="number" class="postsPerFeed_input" /></td>
+                                <td>
+                                    <a class="moveFeedUp_btn" onclick="MoveFeed('up', 1)"><img src="./Content/up_arrow.png" class="admin_panel_up_arrow" /></a>
+                                    <a class="moveFeedDown_btn" onclick="MoveFeed('down', 1)"><img src="./Content/up_arrow.png" class="admin_panel_down_arrow" /></a>
+                                </td>
+                            </tr>
+                            <tr id="adminTableRow2" class="admin_table_row">
+                                <td>
+                                    <select id="feedType_input2">
+                                        <option value="YouTube">YouTube</option>
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Instagram">Instagram</option>
+                                    </select>
+                                </td>
+                                <td><input id="feedName_input2" type="text" /></td>
+                                <td><input id="accountID_input2" type="text" class="accountID_input" /></td>
+                                <td><input id="postsPerView_input2" type="number" class="postsPerView_input" /></td>
+                                <td><input id="postsPerFeed_input2" type="number" class="postsPerFeed_input" /></td>
+                                <td>
+                                    <a class="moveFeedUp_btn" onclick="MoveFeed('up', 2)"><img src="./Content/up_arrow.png" class="admin_panel_up_arrow" /></a>
+                                    <a class="moveFeedDown_btn" onclick="MoveFeed('down', 2)"><img src="./Content/up_arrow.png" class="admin_panel_down_arrow" /></a>
+                                </td>
+                            </tr>
+                            <tr id="adminTableRow3" class="admin_table_row">
+                                <td>
+                                    <select id="feedType_input3">
+                                        <option value="YouTube">YouTube</option>
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Instagram">Instagram</option>
+                                    </select>
+                                </td>
+                                <td><input id="feedName_input3" type="text" /></td>
+                                <td><input id="accountID_input3" type="text" class="accountID_input" /></td>
+                                <td><input id="postsPerView_input3" type="number" class="postsPerView_input" /></td>
+                                <td><input id="postsPerFeed_input3" type="number" class="postsPerFeed_input" /></td>
+                                <td>
+                                    <a class="moveFeedUp_btn" onclick="MoveFeed('up', 3)"><img src="./Content/up_arrow.png" class="admin_panel_up_arrow" /></a>
+                                    <a class="moveFeedDown_btn" onclick="MoveFeed('down', 3)"><img src="./Content/up_arrow.png" class="admin_panel_down_arrow" /></a>
+                                </td>
+                            </tr>
+                            <tr id="adminTableRow4" class="admin_table_row">
+                                <td>
+                                    <select id="feedType_input4">
+                                        <option value="YouTube">YouTube</option>
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Instagram">Instagram</option>
+                                    </select>
+                                </td>
+                                <td><input id="feedName_input4" type="text" /></td>
+                                <td><input id="accountID_input4" type="text" class="accountID_input" /></td>
+                                <td><input id="postsPerView_input4" type="number" class="postsPerView_input" /></td>
+                                <td><input id="postsPerFeed_input4" type="number" class="postsPerFeed_input" /></td>
+                                <td>
+                                    <a class="moveFeedUp_btn" onclick="MoveFeed('up', 4)"><img src="./Content/up_arrow.png" class="admin_panel_up_arrow" /></a>
+                                    <a class="moveFeedDown_btn" onclick="MoveFeed('down', 4)"><img src="./Content/up_arrow.png" class="admin_panel_down_arrow" /></a>
+                                </td>
+                            </tr>
+                            <tr id="adminTableRow5" class="admin_table_row">
+                                <td>
+                                    <select id="feedType_input5">
+                                        <option value="YouTube">YouTube</option>
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Instagram">Instagram</option>
+                                    </select>
+                                </td>
+                                <td><input id="feedName_input5" type="text" /></td>
+                                <td><input id="accountID_input5" type="text" class="accountID_input" /></td>
+                                <td><input id="postsPerView_input5" type="number" class="postsPerView_input" /></td>
+                                <td><input id="postsPerFeed_input5" type="number" class="postsPerFeed_input" /></td>
+                                <td>
+                                    <a class="moveFeedUp_btn" onclick="MoveFeed('up', 5)"><img src="./Content/up_arrow.png" class="admin_panel_up_arrow" /></a>
+                                    <a class="moveFeedDown_btn" onclick="MoveFeed('down', 5)"><img src="./Content/up_arrow.png" class="admin_panel_down_arrow" /></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div id="admin_render_save_buttons_wrapper">
+                        <input type="button" value="Re-Render" onclick="ReRenderFeeds()" />
+                        <input type="button" value="Save Settings" onclick="SaveFeedSettings()" />
+                    </div>
+                </div>
+            </div>
+            <img id="page_nav_logo" src="./Content/guitar_watermark.png" />
+            <div id="page_nav_overlay"></div>
+            <!--
+            <ul id="page_nav_list">
+                <li class="resizable_menu_li"><a href="" class="resizable_menu_btn">Media Feed</a></li>
+                <li class="resizable_menu_li"><a href="" class="resizable_menu_btn">Gear</a></li>
+                <li class="resizable_menu_li"><a href="" class="resizable_menu_btn">Contact</a></li>
+            </ul>
+            -->
+        </nav>
+    </header>
+
+    <main id="body_container" ng-app="SocialFeedApp" ng-controller="SocialFeedCtrl">
+        <section id="feed_section_1">
+            <div class="feed_header">
+                <img src="./Content/{{ firstFeedData.feedType }}_logo.png" class="feed_header_logo" />
+                <span class="feed_header_title">{{ firstFeedData.feedName }}</span>
+                <span class="feed_header_follows_count">{{firstFeedData.followersType}}: {{ firstFeedData.followersCount }}</span>
+                <span class="feed_header_last_activity">Last Activity: {{ firstFeedData.lastActivity }} </span>
+            </div>
+            <a class="rightRotateArrow" onclick="RotateRight(1)"><img src="./Content/rightArrow.png" /></a>
+            <a class="leftRotateArrow" onclick="RotateLeft(1)"><img src="./Content/rightArrow.png" /></a>
+            <div id="feed_slideshow_1">
+                <div class="{{post.postClass}}" ng-repeat="post in firstFeedData.feedPosts">
+                    <a href="{{post.url}}" target="_blank">
+                        <div class="post_thumbnail" style="background: url('{{post.thumbnailUrl}}') no-repeat center center; background-size: 100%"></div>
+                        <div class="post_title">{{post.title}}</div>
+                        <div class="post_details">
+                            <table>
+                                <tr><td class="post_detail_label_td">Full Title: </td><td>{{post.title}}</td></tr>
+                                <tr><td class="post_detail_label_td">Post Date: </td><td>{{post.postDate}}</td></tr>
+                                <tr><td class="post_detail_label_td">Views: </td><td>{{post.viewCount}}</td></tr>                                    
+                                <tr><td class="post_detail_label_td">Likes: </td><td>{{post.likeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Dislikes: </td><td>{{post.dislikeCount}}</td></tr>                                    
+                                <tr><td class="post_detail_label_td">Comments: </td><td>{{post.commentCount}}</td></tr>                                    
+                                <tr><td colspan="2" class="post_detail_description_td">{{post.description}}</td></tr>                                    
+                            </table>                               
+                        </div>                            
+                    </a>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+        </section>
+
+        <section id="feed_section_2">
+            <div class="feed_header">
+                <img src="./Content/{{ secondFeedData.feedType }}_logo.png" class="feed_header_logo" />
+                <span class="feed_header_title">{{ secondFeedData.feedName }}</span>
+                <span class="feed_header_follows_count">{{secondFeedData.followersType}}: {{ secondFeedData.followersCount }}</span>
+                <span class="feed_header_last_activity">Last Activity: {{ secondFeedData.lastActivity }} </span>
+            </div>
+            <a class="rightRotateArrow" onclick="RotateRight(2)"><img src="./Content/rightArrow.png" /></a>
+            <a class="leftRotateArrow" onclick="RotateLeft(2)"><img src="./Content/rightArrow.png" /></a>
+            <div id="feed_slideshow_2">
+                    <div class="{{post.postClass}}" ng-repeat="post in secondFeedData.feedPosts">
+                        <a href="{{post.url}}" target="_blank">
+                            <div class="post_thumbnail" style="background: url('{{post.thumbnailUrl}}') no-repeat center center; background-size: 100%"></div>
+                            <div class="post_title">{{post.title}}</div>
+                            <div class="post_details">
+                                <table>
+                                    <tr><td class="post_detail_label_td">Full Title: </td><td>{{post.title}}</td></tr>
+                                    <tr><td class="post_detail_label_td">Post Date: </td><td>{{post.postDate}}</td></tr>
+                                    <tr><td class="post_detail_label_td">Views: </td><td>{{post.viewCount}}</td></tr>
+                                    <tr><td class="post_detail_label_td">Likes: </td><td>{{post.likeCount}}</td></tr>
+                                    <tr><td class="post_detail_label_td">Dislikes: </td><td>{{post.dislikeCount}}</td></tr>
+                                    <tr><td class="post_detail_label_td">Comments: </td><td>{{post.commentCount}}</td></tr>
+                                    <tr><td colspan="2" class="post_detail_description_td">{{post.description}}</td></tr>
+                                </table>
+                            </div>
+                        </a>
+                    </div>
+                    <div style="clear:both"></div>
+                </div>
+        </section>
+
+        <section id="feed_section_3">
+            <div class="feed_header">
+                <img src="./Content/{{ thirdFeedData.feedType }}_logo.png" class="feed_header_logo" />
+                <span class="feed_header_title">{{ thirdFeedData.feedName }}</span>
+                <span class="feed_header_follows_count">{{thirdFeedData.followersType}}: {{ thirdFeedData.followersCount }}</span>
+                <span class="feed_header_last_activity">Last Activity: {{ thirdFeedData.lastActivity }} </span>
+            </div>
+            <a class="rightRotateArrow" onclick="RotateRight(3)"><img src="./Content/rightArrow.png" /></a>
+            <a class="leftRotateArrow" onclick="RotateLeft(3)"><img src="./Content/rightArrow.png" /></a>
+            <div id="feed_slideshow_3">
+                <div class="{{post.postClass}}" ng-repeat="post in thirdFeedData.feedPosts">
+                    <a href="{{post.url}}" target="_blank">
+                        <div class="post_thumbnail" style="background: url('{{post.thumbnailUrl}}') no-repeat center center; background-size: 100%"></div>
+                        <div class="post_title">{{post.title}}</div>
+                        <div class="post_details">
+                            <table>
+                                <tr><td class="post_detail_label_td">Full Title: </td><td>{{post.title}}</td></tr>
+                                <tr><td class="post_detail_label_td">Post Date: </td><td>{{post.postDate}}</td></tr>
+                                <tr><td class="post_detail_label_td">Views: </td><td>{{post.viewCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Likes: </td><td>{{post.likeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Dislikes: </td><td>{{post.dislikeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Comments: </td><td>{{post.commentCount}}</td></tr>
+                                <tr><td colspan="2" class="post_detail_description_td">{{post.description}}</td></tr>
+                            </table>
+                        </div>
+                    </a>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+        </section>
+
+        <section id="feed_section_4">
+            <div class="feed_header">
+                <img src="./Content/{{ fourthFeedData.feedType }}_logo.png" class="feed_header_logo" />
+                <span class="feed_header_title">{{ fourthFeedData.feedName }}</span>
+                <span class="feed_header_follows_count">{{fourthFeedData.followersType}}: {{ fourthFeedData.followersCount }}</span>
+                <span class="feed_header_last_activity">Last Activity: {{ fourthFeedData.lastActivity }} </span>
+            </div>
+            <a class="rightRotateArrow" onclick="RotateRight(4)"><img src="./Content/rightArrow.png" /></a>
+            <a class="leftRotateArrow" onclick="RotateLeft(4)"><img src="./Content/rightArrow.png" /></a>
+            <div id="feed_slideshow_4">
+                <div class="{{post.postClass}}" ng-repeat="post in fourthFeedData.feedPosts">
+                    <a href="{{post.url}}" target="_blank">
+                        <div class="post_thumbnail" style="background: url('{{post.thumbnailUrl}}') no-repeat center center; background-size: 100%"></div>
+                        <div class="post_title">{{post.title}}</div>
+                        <div class="post_details">
+                            <table>
+                                <tr><td class="post_detail_label_td">Full Title: </td><td>{{post.title}}</td></tr>
+                                <tr><td class="post_detail_label_td">Post Date: </td><td>{{post.postDate}}</td></tr>
+                                <tr><td class="post_detail_label_td">Views: </td><td>{{post.viewCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Likes: </td><td>{{post.likeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Dislikes: </td><td>{{post.dislikeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Comments: </td><td>{{post.commentCount}}</td></tr>
+                                <tr><td colspan="2" class="post_detail_description_td">{{post.description}}</td></tr>
+                            </table>
+                        </div>
+                    </a>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+        </section>
+
+        <section id="feed_section_5">
+            <div class="feed_header">
+                <img src="./Content/{{ fifthFeedData.feedType }}_logo.png" class="feed_header_logo" />
+                <span class="feed_header_title">{{ fifthFeedData.feedName }}</span>
+                <span class="feed_header_follows_count">{{fifthFeedData.followersType}}: {{ fifthFeedData.followersCount }}</span>
+                <span class="feed_header_last_activity">Last Activity: {{ fifthFeedData.lastActivity }} </span>
+            </div>
+            <a class="rightRotateArrow" onclick="RotateRight(5)"><img src="./Content/rightArrow.png" /></a>
+            <a class="leftRotateArrow" onclick="RotateLeft(5)"><img src="./Content/rightArrow.png" /></a>
+            <div id="feed_slideshow_5">
+                <div class="{{post.postClass}}" ng-repeat="post in fifthFeedData.feedPosts">
+                    <a href="{{post.url}}" target="_blank">
+                        <div class="post_thumbnail" style="background: url('{{post.thumbnailUrl}}') no-repeat center center; background-size: 100%"></div>
+                        <div class="post_title">{{post.title}}</div>
+                        <div class="post_details">
+                            <table>
+                                <tr><td class="post_detail_label_td">Full Title: </td><td>{{post.title}}</td></tr>
+                                <tr><td class="post_detail_label_td">Post Date: </td><td>{{post.postDate}}</td></tr>
+                                <tr><td class="post_detail_label_td">Views: </td><td>{{post.viewCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Likes: </td><td>{{post.likeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Dislikes: </td><td>{{post.dislikeCount}}</td></tr>
+                                <tr><td class="post_detail_label_td">Comments: </td><td>{{post.commentCount}}</td></tr>
+                                <tr><td colspan="2" class="post_detail_description_td">{{post.description}}</td></tr>
+                            </table>
+                        </div>
+                    </a>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+        </section>
+        <button id="feedDataReload_button" ng-click="reload()" style="display:none">Refresh</button>
+    </main>
+
+    <div id="login_window">
+        <div id="login_window_top">
+            Log In
+            <div id="login_window_top_close_btn" onClick="ControlLoginPanel('hide')">X</div>
+        </div>
+        <table>
+            <tr>
+                <td>
+                    <label for="login_url_input" id="login_userName_label">User Name:</label>
+                </td>
+                <td>
+                    <input type="text" id="login_userName_input" name="login_userName_input" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="login_password_input" id="login_password_label">Password:</label>
+                </td>
+                <td>
+                    <input type="password" id="login_password_input" name="login_password_input" />
+                </td>
+            </tr>
+            <tr>
+                <td id="login_query_result_td" colspan="2" style="text-align:center; color:#6B6B6B">
+                    <br />
+                </td>
+            </tr>
+        </table>
+
+        <div id="login_window_bottom">
+            <div id="login_window_bottom_buttons">
+                <input type="button" value="Ok" id="login_window_ok_btn" onClick="LogIn()" />
+                <input type="button" value="Cancel" id="login_window_cancel_btn" onClick="ControlLoginPanel('hide')" />
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer">NowakP | 2017</footer>
+</body>
+</html>
